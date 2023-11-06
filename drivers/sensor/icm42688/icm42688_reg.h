@@ -277,7 +277,8 @@
 #define BIT_INT_ASYNC_RESET	  BIT(4)
 
 /* misc. defines */
-#define WHO_AM_I_ICM42688     0x47
+#define WHO_AM_I_ICM42688P    0x47
+#define WHO_AM_I_ICM42688V    0xDB
 #define MIN_ACCEL_SENS_SHIFT  11
 #define ACCEL_DATA_SIZE	      6
 #define GYRO_DATA_SIZE	      6

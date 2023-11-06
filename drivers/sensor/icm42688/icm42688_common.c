@@ -53,8 +53,8 @@ int icm42688_reset(const struct device *dev)
 		return res;
 	}
 
-	if (value != WHO_AM_I_ICM42688) {
-		LOG_ERR("invalid WHO_AM_I value, was %i but expected %i", value, WHO_AM_I_ICM42688);
+	if (value != dev_cfg->whoami) {
+		LOG_ERR("invalid WHO_AM_I value, was %i but expected %i", value, dev_cfg->whoami);
 		return -EINVAL;
 	}
 

@@ -7,10 +7,10 @@
 config ICM42688
 	bool "ICM42688 Six-Axis Motion Tracking Device"
 	default y
-	depends on DT_HAS_INVENSENSE_ICM42688_ENABLED
+	depends on DT_HAS_INVENSENSE_ICM42688_ENABLED || DT_HAS_INVENSENSE_ICM42688V_ENABLED
 	select SPI
 	help
-	  Enable driver for ICM42688 SPI-based six-axis motion tracking device.
+	  Enable driver for ICM42688P or ICM42688V SPI-based six-axis motion tracking device.
 
 config EMUL_ICM42688
 	bool "Emulator for the ICM42688"

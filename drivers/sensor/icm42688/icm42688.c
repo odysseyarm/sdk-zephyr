@@ -6,8 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define DT_DRV_COMPAT invensense_icm42688
-
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/sys/byteorder.h>
@@ -281,22 +279,26 @@ void icm42688_unlock(const struct device *dev)
 #endif
 
 /* device defaults to spi mode 0/3 support */
-#define ICM42688_SPI_CFG                                                                           \
-	SPI_OP_MODE_MASTER | SPI_MODE_CPOL | SPI_MODE_CPHA | SPI_WORD_SET(8) | SPI_TRANSFER_MSB
+#define ICM42688_SPI_CFG										\
+	SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_TRANSFER_MSB
 
-#define ICM42688_DEFINE_DATA(inst)                                                                 \
-	static struct icm42688_dev_data icm42688_driver_##inst;
-
-#define ICM42688_INIT(inst)                                                                        \
-	ICM42688_DEFINE_DATA(inst);                                                                \
-                                                                                                   \
-	static const struct icm42688_dev_cfg icm42688_cfg_##inst = {                               \
-		.spi = SPI_DT_SPEC_INST_GET(inst, ICM42688_SPI_CFG, 0U),                           \
-		.gpio_int1 = GPIO_DT_SPEC_INST_GET_OR(inst, int_gpios, {0}),                       \
-	};                                                                                         \
-                                                                                                   \
-	SENSOR_DEVICE_DT_INST_DEFINE(inst, icm42688_init, NULL, &icm42688_driver_##inst,           \
-				     &icm42688_cfg_##inst, POST_KERNEL,                            \
+#define ICM42688_INIT(inst, id)										\
+	static struct icm42688_dev_data icm42688##id##_driver_##inst;					\
+													\
+	static const struct icm42688_dev_cfg icm42688##id##_cfg_##inst = {				\
+		.spi = SPI_DT_SPEC_INST_GET(inst, ICM42688_SPI_CFG, 0U),				\
+		.gpio_int1 = GPIO_DT_SPEC_INST_GET_OR(inst, int_gpios, {0}),				\
+		.whoami = WHO_AM_I_ICM42688##id,							\
+	};												\
+													\
+	SENSOR_DEVICE_DT_INST_DEFINE(inst, icm42688_init, NULL, &icm42688##id##_driver_##inst,		\
+				     &icm42688##id##_cfg_##inst, POST_KERNEL,				\
 				     CONFIG_SENSOR_INIT_PRIORITY, &icm42688_driver_api);
 
-DT_INST_FOREACH_STATUS_OKAY(ICM42688_INIT)
+#undef DT_DRV_COMPAT
+#define DT_DRV_COMPAT invensense_icm42688
+DT_INST_FOREACH_STATUS_OKAY_VARGS(ICM42688_INIT, P)
+
+#undef DT_DRV_COMPAT
+#define DT_DRV_COMPAT invensense_icm42688v
+DT_INST_FOREACH_STATUS_OKAY_VARGS(ICM42688_INIT, V)

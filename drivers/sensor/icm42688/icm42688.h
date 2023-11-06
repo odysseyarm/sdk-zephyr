@@ -422,6 +422,7 @@ struct icm42688_dev_cfg {
 	struct spi_dt_spec spi;
 	struct gpio_dt_spec gpio_int1;
 	struct gpio_dt_spec gpio_int2;
+	uint8_t whoami;
 };
 
 /**
