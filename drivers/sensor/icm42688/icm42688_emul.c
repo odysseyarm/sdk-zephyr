@@ -52,7 +52,7 @@ static void icm42688_emul_handle_write(const struct emul *target, uint8_t regn, 
 			/* Perform a soft reset */
 			memset(data->reg, 0, NUM_REGS);
 			/* Initialized the who-am-i register */
-			data->reg[REG_WHO_AM_I] = WHO_AM_I_ICM42688;
+			data->reg[REG_WHO_AM_I] = WHO_AM_I_ICM42688P;
 			/* Set the bit for the reset being done */
 			data->reg[REG_INT_STATUS] |= BIT_INT_STATUS_RESET_DONE;
 		}
@@ -109,7 +109,7 @@ static int icm42688_emul_init(const struct emul *target, const struct device *pa
 	struct icm42688_emul_data *data = target->data;
 
 	/* Initialized the who-am-i register */
-	data->reg[REG_WHO_AM_I] = WHO_AM_I_ICM42688;
+	data->reg[REG_WHO_AM_I] = WHO_AM_I_ICM42688P;
 
 	return 0;
 }
