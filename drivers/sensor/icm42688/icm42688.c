@@ -251,11 +251,12 @@ int icm42688_init(const struct device *dev)
 
 	memset(&data->cfg, 0, sizeof(struct icm42688_cfg));
 	data->cfg.accel_mode = ICM42688_ACCEL_LN;
+	data->cfg.accel_fs = cfg->accel_fs;
+	data->cfg.accel_odr = cfg->accel_odr;
 	data->cfg.gyro_mode = ICM42688_GYRO_LN;
-	data->cfg.accel_fs = ICM42688_ACCEL_FS_2G;
-	data->cfg.gyro_fs = ICM42688_GYRO_FS_125;
-	data->cfg.accel_odr = ICM42688_ACCEL_ODR_1000;
-	data->cfg.gyro_odr = ICM42688_GYRO_ODR_1000;
+	data->cfg.gyro_fs = cfg->gyro_fs;
+	data->cfg.gyro_odr = cfg->gyro_odr;
+	data->cfg.temp_dis = false;
 	data->cfg.fifo_en = false;
 
 	res = icm42688_configure(dev, &data->cfg);
@@ -288,6 +289,10 @@ void icm42688_unlock(const struct device *dev)
 	static const struct icm42688_dev_cfg icm42688##id##_cfg_##inst = {				\
 		.spi = SPI_DT_SPEC_INST_GET(inst, ICM42688_SPI_CFG, 0U),				\
 		.gpio_int1 = GPIO_DT_SPEC_INST_GET_OR(inst, int_gpios, {0}),				\
+		.accel_fs = DT_INST_ENUM_IDX(inst, accel_fs),						\
+		.accel_odr = DT_INST_ENUM_IDX(inst, accel_hz),						\
+		.gyro_fs = DT_INST_ENUM_IDX(inst, gyro_fs),						\
+		.gyro_odr = DT_INST_ENUM_IDX(inst, gyro_hz),						\
 		.whoami = WHO_AM_I_ICM42688##id,							\
 	};												\
 													\
