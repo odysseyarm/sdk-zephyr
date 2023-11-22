@@ -15,11 +15,11 @@
 /* Common bank select register and values */
 #define REG_BANK_SEL  0x76
 #define MASK_BANK_SEL GENMASK(2, 0)
-#define BIT_BANK0     0x000
-#define BIT_BANK1     0x001
-#define BIT_BANK2     0x010
-#define BIT_BANK3     0x011
-#define BIT_BANK4     0x100
+#define BIT_BANK0     0
+#define BIT_BANK1     1
+#define BIT_BANK2     2
+#define BIT_BANK3     3
+#define BIT_BANK4     4
 
 /* Helper macros for addressing registers in the 4 register banks
  * registers are defined as 16 bit values with the bank in the high
@@ -143,7 +143,7 @@
 #define MASK_FIFO_MODE		   GENMASK(7, 6)
 #define BIT_FIFO_MODE_BYPASS	   0x00
 #define BIT_FIFO_MODE_STREAM	   0x01
-#define BIT_FIFO_MODE_STOP_ON_FULL 0x10
+#define BIT_FIFO_MODE_STOP_ON_FULL 0x02
 
 /* Bank0 REG_INT_STATUS */
 #define BIT_INT_STATUS_AGC_RDY	  BIT(0)
@@ -176,8 +176,8 @@
 
 /* Bank0 REG_INTF_CONFIG0 */
 #define MASK_UI_SIFS_CFG	    GENMASK(1, 0)
-#define BIT_UI_SIFS_CFG_DISABLE_SPI 0x10
-#define BIT_UI_SIFS_CFG_DISABLE_I2C 0x11
+#define BIT_UI_SIFS_CFG_DISABLE_SPI 0x02
+#define BIT_UI_SIFS_CFG_DISABLE_I2C 0x03
 #define BIT_SENSOR_DATA_ENDIAN	    BIT(4)
 #define BIT_FIFO_COUNT_ENDIAN	    BIT(5)
 #define BIT_FIFO_COUNT_REC	    BIT(6)
@@ -187,9 +187,15 @@
 #define MASK_CLKSEL	     GENMASK(1, 0)
 #define BIT_CLKSEL_INT_RC    0x00
 #define BIT_CLKSEL_PLL_OR_RC 0x01
-#define BIT_CLKSEL_DISABLE   0x11
+#define BIT_CLKSEL_DISABLE   0x03
 #define BIT_RTC_MODE	     BIT(2)
 #define BIT_ACCEL_LP_CLK_SEL BIT(3)
+
+/* Bank0 REG_INTF_CONFIG5 */
+#define MASK_PIN9F	     GENMASK(2, 1)
+#define BIT_PIN9F_INT2       0x00
+#define BIT_PIN9F_FSYNC      0x01
+#define BIT_PIN9F_CLKIN      0x02
 
 /* Bank0 REG_PWR_MGMT_0 */
 #define MASK_ACCEL_MODE	   GENMASK(1, 0)
