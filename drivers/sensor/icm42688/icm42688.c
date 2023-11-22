@@ -258,6 +258,7 @@ int icm42688_init(const struct device *dev)
 	data->cfg.gyro_odr = cfg->gyro_odr;
 	data->cfg.temp_dis = false;
 	data->cfg.fifo_en = false;
+	data->cfg.clkin_hz = cfg->clkin_hz;
 
 	res = icm42688_configure(dev, &data->cfg);
 	if (res != 0) {
@@ -294,6 +295,7 @@ void icm42688_unlock(const struct device *dev)
 		.gyro_fs = DT_INST_ENUM_IDX(inst, gyro_fs),						\
 		.gyro_odr = DT_INST_ENUM_IDX(inst, gyro_hz),						\
 		.whoami = WHO_AM_I_ICM42688##id,							\
+		.clkin_hz = DT_INST_PROP_OR(inst, clkin_hz, 0),						\
 	};												\
 													\
 	SENSOR_DEVICE_DT_INST_DEFINE(inst, icm42688_init, NULL, &icm42688##id##_driver_##inst,		\

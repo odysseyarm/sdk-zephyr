@@ -139,6 +139,7 @@ static inline void icm42688_gyro_reg_to_fs(enum icm42688_gyro_fs fs, struct sens
 
 /**
  * @brief Accelerometer data rate options
+ * If external CLKIN provided, below values scale by CLKIN/32kHz
  */
 enum icm42688_accel_odr {
 	ICM42688_ACCEL_ODR_32000 = 1,
@@ -261,6 +262,7 @@ static inline void icm42688_accel_reg_to_hz(enum icm42688_accel_odr odr, struct 
 
 /**
  * @brief Gyroscope data rate options
+ * If external CLKIN provided, below values scale by CLKIN/32kHz
  */
 enum icm42688_gyro_odr {
 	ICM42688_GYRO_ODR_32000 = 1,
@@ -378,6 +380,7 @@ struct icm42688_cfg {
 	/* TODO temp signal processing options */
 
 	/* TODO timestamp options */
+	uint16_t clkin_hz;
 
 	bool fifo_en;
 	uint16_t fifo_wm;
@@ -426,6 +429,7 @@ struct icm42688_dev_cfg {
 	uint16_t gyro_odr;
 	uint16_t accel_fs;
 	uint16_t gyro_fs;
+	uint16_t clkin_hz;
 	uint8_t whoami;
 };
 

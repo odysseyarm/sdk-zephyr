@@ -94,3 +94,12 @@ properties:
       - 63
       - 31
       - 16
+
+  clkin-hz:
+    type: int
+    description: |
+      Frequency of CLKIN, if provided (Unit - Hz)
+      To improve sampling resolution
+      Default value is 0 (no CLKIN provided).
+    default: 0
+

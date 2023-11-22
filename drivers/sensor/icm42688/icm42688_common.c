@@ -180,6 +180,7 @@ int icm42688_configure(const struct device *dev, struct icm42688_cfg *cfg)
 			      FIELD_PREP(BIT_INT_TDEASSERT_DISABLE, 1);
 	}
 
+	LOG_DBG("INT_CONFIG1 (0x%x) 0x%x", REG_INT_CONFIG1, int_config1);
 	res = icm42688_spi_single_write(&dev_cfg->spi, REG_INT_CONFIG1, int_config1);
 	if (res) {
 		LOG_ERR("Error writing to INT_CONFIG1");
@@ -247,6 +248,35 @@ int icm42688_configure(const struct device *dev, struct icm42688_cfg *cfg)
 		res = icm42688_spi_single_write(&dev_cfg->spi, REG_INT_SOURCE0, int_source0);
 		if (res) {
 			return res;
+		}
+	}
+
+	/* Set RTCIN mode if CLKIN supplied */
+	if (cfg->clkin_hz > 0)
+	{
+		LOG_DBG("Found CLKIN setting = %d", cfg->clkin_hz);
+		uint8_t intf_config1, intf_config5;
+
+		res = icm42688_spi_read(&dev_cfg->spi, REG_INTF_CONFIG1, &intf_config1, 1);
+		if (res != 0) {
+			LOG_ERR("Error reading REG_INTF_CONFIG1");
+			return -EINVAL;
+		}
+
+		intf_config1 |= BIT_RTC_MODE;
+		LOG_DBG("INTF_CONFIG1 (0x%x) 0x%x", REG_INTF_CONFIG1, intf_config1);
+		res = icm42688_spi_single_write(&dev_cfg->spi, REG_INTF_CONFIG1, intf_config1);
+		if (res != 0) {
+			LOG_ERR("Error writing REG_INTF_CONFIG1");
+			return -EINVAL;
+		}
+
+		intf_config5 = FIELD_PREP(MASK_PIN9F, BIT_PIN9F_CLKIN);
+		LOG_DBG("INTF_CONFIG5 (0x%x) 0x%x", REG_INTF_CONFIG5, intf_config5);
+		res = icm42688_spi_single_write(&dev_cfg->spi, REG_INTF_CONFIG5, intf_config5);
+		if (res != 0) {
+			LOG_ERR("Error writing REG_INTF_CONFIG5");
+			return -EINVAL;
 		}
 	}
 
