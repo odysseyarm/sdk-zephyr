@@ -178,6 +178,39 @@ static int parse_ipv4_addr(const struct shell *sh, char *host, char *port,
 	return 0;
 }
 
+static int zperf_bind_host(const struct shell *sh,
+			   size_t argc, char *argv[],
+			   struct zperf_download_params *param)
+{
+	int ret;
+
+	/* Parse options */
+	if (argc >= 2) {
+		param->port = strtoul(argv[1], NULL, 10);
+	} else {
+		param->port = DEF_PORT;
+	}
+
+	if (argc >= 3) {
+		char *addr_str = argv[2];
+		struct sockaddr addr;
+
+		memset(&addr, 0, sizeof(addr));
+
+		ret = net_ipaddr_parse(addr_str, strlen(addr_str), &addr);
+		if (ret < 0) {
+			shell_fprintf(sh, SHELL_WARNING,
+				      "Cannot parse address \"%s\"\n",
+				      addr_str);
+			return ret;
+		}
+
+		memcpy(&param->addr, &addr, sizeof(struct sockaddr));
+	}
+
+	return 0;
+}
+
 static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
 {
 	int start = 0;
@@ -191,7 +224,7 @@ static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
 		if (zperf_get_ipv6_addr(argv[start + 1], argv[start + 2],
 					&shell_ipv6) < 0) {
 			shell_fprintf(sh, SHELL_WARNING,
-				      "Unable to set IP\n");
+				      "Unable to set %s address (%s disabled)\n", "IPv6", "IPv4");
 			return 0;
 		}
 
@@ -208,7 +241,7 @@ static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
 
 		if (zperf_get_ipv4_addr(argv[start + 1], &shell_ipv4) < 0) {
 			shell_fprintf(sh, SHELL_WARNING,
-				      "Unable to set IP\n");
+				      "Unable to set %s address (%s disabled)\n", "IPv4", "IPv6");
 			return -ENOEXEC;
 		}
 
@@ -227,7 +260,7 @@ static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
 			if (zperf_get_ipv4_addr(argv[start + 1],
 						&shell_ipv4) < 0) {
 				shell_fprintf(sh, SHELL_WARNING,
-					      "Unable to set IP\n");
+					      "Unable to set %s address\n", "IPv4");
 				return -ENOEXEC;
 			}
 
@@ -243,7 +276,7 @@ static int cmd_setip(const struct shell *sh, size_t argc, char *argv[])
 			if (zperf_get_ipv6_addr(argv[start + 1],
 						argv[start + 2], &shell_ipv6) < 0) {
 				shell_fprintf(sh, SHELL_WARNING,
-					      "Unable to set IP\n");
+					      "Unable to set %s address\n", "IPv6");
 				return -ENOEXEC;
 			}
 
@@ -333,10 +366,12 @@ static int cmd_udp_download(const struct shell *sh, size_t argc,
 		struct zperf_download_params param = { 0 };
 		int ret;
 
-		if (argc >= 2) {
-			param.port = strtoul(argv[1], NULL, 10);
-		} else {
-			param.port = DEF_PORT;
+		ret = zperf_bind_host(sh, argc, argv, &param);
+		if (ret < 0) {
+			shell_fprintf(sh, SHELL_WARNING,
+				      "Unable to bind host.\n");
+			shell_help(sh);
+			return -ENOEXEC;
 		}
 
 		ret = zperf_udp_download(&param, udp_session_cb, (void *)sh);
@@ -1072,10 +1107,12 @@ static int cmd_tcp_download(const struct shell *sh, size_t argc,
 		struct zperf_download_params param = { 0 };
 		int ret;
 
-		if (argc >= 2) {
-			param.port = strtoul(argv[1], NULL, 10);
-		} else {
-			param.port = DEF_PORT;
+		ret = zperf_bind_host(sh, argc, argv, &param);
+		if (ret < 0) {
+			shell_fprintf(sh, SHELL_WARNING,
+				      "Unable to bind host.\n");
+			shell_help(sh);
+			return -ENOEXEC;
 		}
 
 		ret = zperf_tcp_download(&param, tcp_session_cb, (void *)sh);
@@ -1110,11 +1147,11 @@ void zperf_shell_init(void)
 {
 	int ret;
 
-	if (IS_ENABLED(CONFIG_NET_IPV6) && MY_IP6ADDR) {
+	if (IS_ENABLED(MY_IP6ADDR_SET) && MY_IP6ADDR) {
 		ret = net_addr_pton(AF_INET6, MY_IP6ADDR,
 				    &in6_addr_my.sin6_addr);
 		if (ret < 0) {
-			NET_WARN("Unable to set IP");
+			NET_WARN("Unable to set %s address\n", "IPv6");
 		} else {
 			NET_INFO("Setting IP address %s",
 				 net_sprint_ipv6_addr(&in6_addr_my.sin6_addr));
@@ -1123,20 +1160,21 @@ void zperf_shell_init(void)
 		ret = net_addr_pton(AF_INET6, DST_IP6ADDR,
 				    &in6_addr_dst.sin6_addr);
 		if (ret < 0) {
-			NET_WARN("Unable to set IP %s",
+			NET_WARN("Unable to set destination %s address %s",
+				 "IPv6",
 				 DST_IP6ADDR ? DST_IP6ADDR
-					     : "(Default IPv6 destination address not set)");
+					     : "(not set)");
 		} else {
 			NET_INFO("Setting destination IP address %s",
 				 net_sprint_ipv6_addr(&in6_addr_dst.sin6_addr));
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_NET_IPV4) && MY_IP4ADDR) {
+	if (IS_ENABLED(MY_IP4ADDR_SET) && MY_IP4ADDR) {
 		ret = net_addr_pton(AF_INET, MY_IP4ADDR,
 				    &in4_addr_my.sin_addr);
 		if (ret < 0) {
-			NET_WARN("Unable to set IP");
+			NET_WARN("Unable to set %s address\n", "IPv4");
 		} else {
 			NET_INFO("Setting IP address %s",
 				 net_sprint_ipv4_addr(&in4_addr_my.sin_addr));
@@ -1145,9 +1183,10 @@ void zperf_shell_init(void)
 		ret = net_addr_pton(AF_INET, DST_IP4ADDR,
 				    &in4_addr_dst.sin_addr);
 		if (ret < 0) {
-			NET_WARN("Unable to set IP %s",
+			NET_WARN("Unable to set destination %s address %s",
+				 "IPv4",
 				  DST_IP4ADDR ? DST_IP4ADDR
-					      : "(Default IPv4 destination address not set)");
+					      : "(not set)");
 		} else {
 			NET_INFO("Setting destination IP address %s",
 				 net_sprint_ipv4_addr(&in4_addr_dst.sin_addr));
@@ -1206,8 +1245,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(zperf_cmd_tcp,
 		  ,
 		  cmd_tcp_upload2),
 	SHELL_CMD(download, &zperf_cmd_tcp_download,
-		  "[<port>]\n"
-		  "Example: tcp download 5001\n",
+		  "[<port>]:  Server port to listen on/connect to\n"
+		  "[<host>]:  Bind to <host>, an interface address\n"
+		  "Example: tcp download 5001 192.168.0.1\n",
 		  cmd_tcp_download),
 	SHELL_SUBCMD_SET_END
 );
@@ -1264,8 +1304,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(zperf_cmd_udp,
 		  ,
 		  cmd_udp_upload2),
 	SHELL_CMD(download, &zperf_cmd_udp_download,
-		  "[<port>]\n"
-		  "Example: udp download 5001\n",
+		  "[<port>]:  Server port to listen on/connect to\n"
+		  "[<host>]:  Bind to <host>, an interface address\n"
+		  "Example: udp download 5001 192.168.0.1\n",
 		  cmd_udp_download),
 	SHELL_SUBCMD_SET_END
 );

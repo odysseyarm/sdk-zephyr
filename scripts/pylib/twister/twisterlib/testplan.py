@@ -524,7 +524,7 @@ class TestPlan:
 
                     for name in parsed_data.scenarios.keys():
                         suite_dict = parsed_data.get_scenario(name)
-                        suite = TestSuite(root, suite_path, name, data=suite_dict)
+                        suite = TestSuite(root, suite_path, name, data=suite_dict, detailed_test_id=self.options.detailed_test_id)
                         suite.add_subcases(suite_dict, subcases, ztest_suite_names)
                         if testsuite_filter:
                             if suite.name and suite.name in testsuite_filter:
@@ -740,7 +740,7 @@ class TestPlan:
                         instance.add_filter("Not part of requested test plan", Filters.TESTSUITE)
 
                 if runnable and not instance.run:
-                    instance.add_filter("Not runnable on device", Filters.PLATFORM)
+                    instance.add_filter("Not runnable on device", Filters.CMD_LINE)
 
                 if self.options.integration and ts.integration_platforms and plat.name not in ts.integration_platforms:
                     instance.add_filter("Not part of integration platforms", Filters.TESTSUITE)
